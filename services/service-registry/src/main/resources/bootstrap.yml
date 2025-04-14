@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: service-registry
+
+#  profiles:
+#    active: dev
+
+  cloud:
+    config:
+      uri: http://localhost:8080
+      fail-fast: true
+
+server:
+  port: 8761
+
+eureka:
+  instance:
+    hostname: service-registry
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
