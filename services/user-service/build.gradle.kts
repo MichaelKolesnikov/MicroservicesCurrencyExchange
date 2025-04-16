@@ -44,6 +44,11 @@ dependencies {
 	// .env
 	implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 
+	implementation("org.springframework.boot:spring-boot-starter-amqp")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+	implementation("org.springframework.boot:spring-boot-starter-batch")
+
 	runtimeOnly("org.postgresql:postgresql")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

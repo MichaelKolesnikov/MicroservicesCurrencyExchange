@@ -5,6 +5,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/database
     username: root
     password: root
+    driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 30000    # Таймаут получения соединения (мс)
       maximum-pool-size: 10        # Максимальный размер пула
@@ -26,6 +27,11 @@ spring:
     config:
       uri: http://localhost:8080
       fail-fast: true
+
+  batch:
+    jdbc:
+      initialize-schema: always
+      table-prefix: BATCH_
 
 server:
   port: 8081
