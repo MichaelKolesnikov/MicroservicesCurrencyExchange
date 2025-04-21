@@ -49,6 +49,18 @@ dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-batch")
 
+	// Monitoring
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework:spring-aspects")
+	// Micrometer & Tracing
+	implementation("io.micrometer:micrometer-tracing-bridge-otel")
+	implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
+	// DataSource observability
+	implementation("net.ttddyy.observation:datasource-micrometer-spring-boot:1.0.3")
+	implementation("io.opentelemetry:opentelemetry-exporter-zipkin:1.35.0")
+	// Runtime dependencies
+	runtimeOnly("com.github.loki4j:loki-logback-appender:1.3.2")
+
 	runtimeOnly("org.postgresql:postgresql")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

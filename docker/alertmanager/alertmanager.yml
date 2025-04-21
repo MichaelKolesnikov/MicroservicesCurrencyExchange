@@ -1,0 +1,16 @@
+route:
+  receiver: telegram-alerts
+  group_by: [alertname]
+  group_wait: 10s
+  group_interval: 5m
+
+receivers:
+  - name: telegram-alerts
+    telegram_configs:
+      - bot_token: "7752879194:AAHu7boNzVC_sJgnJGUhF1FW0DMa699VyNo"
+        chat_id: -1002366282002
+        api_url: https://api.telegram.org
+        send_resolved: true
+        parse_mode: ""
+# to get real chat_id:
+# curl -s "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates" | jq

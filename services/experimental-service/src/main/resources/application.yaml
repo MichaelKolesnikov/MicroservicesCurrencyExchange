@@ -1,0 +1,39 @@
+server:
+  port: 8800
+
+spring:
+  application:
+    name: experimental-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/database
+    username: root
+    password: root
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000    # Таймаут получения соединения (мс)
+      maximum-pool-size: 10        # Максимальный размер пула
+      minimum-idle: 2             # Минимальное количество idle-соединений
+      idle-timeout: 600000        # Макс время бездействия соединения (мс)
+      max-lifetime: 1800000       # Макс время жизни соединения (мс)
+      pool-name: MyHikariPool     # Имя пула для мониторинга
+      auto-commit: true
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://host.docker.internal:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

@@ -37,6 +37,18 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
     implementation("org.springframework.cloud:spring-cloud-starter-config")
 
+    // Monitoring
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework:spring-aspects")
+    // Micrometer & Tracing
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
+    // DataSource observability
+    implementation("net.ttddyy.observation:datasource-micrometer-spring-boot:1.0.3")
+    implementation("io.opentelemetry:opentelemetry-exporter-zipkin:1.35.0")
+    // Runtime dependencies
+    runtimeOnly("com.github.loki4j:loki-logback-appender:1.3.2")
+
     // Caffeine
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.springframework.boot:spring-boot-starter-cache:3.4.4")

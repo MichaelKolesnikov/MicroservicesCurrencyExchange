@@ -1,6 +1,7 @@
 networks:
   microservices-net:
     driver: bridge
+    name: microservices-net
 
 services:
   postgres:
@@ -37,52 +38,137 @@ services:
       - postgres
     restart: unless-stopped
 
-  tempo:
-    image: grafana/tempo:2.2.2
-    command: [ "-config.file=/etc/tempo.yaml" ]
-    volumes:
-      - ./docker/tempo/tempo.yml:/etc/tempo.yaml:ro
-      - ./docker/tempo/tempo-data:/tmp/tempo
-    ports:
-      - "3110:3100"  # Tempo
-      - "9411:9411" # zipkin
-
-  loki:
-    image: grafana/loki:main
-    command: [ "-config.file=/etc/loki/local-config.yaml" ]
-    ports:
-      - "3100:3100"
-
-  prometheus:
-    image: prom/prometheus:v2.46.0
-    command:
-      - --enable-feature=exemplar-storage
-      - --config.file=/etc/prometheus/prometheus.yml
-    volumes:
-      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  # Маппинг для Linux
-
   grafana:
-    image: grafana/grafana:10.1.0
+    container_name: grafana
+    image: grafana/grafana
     volumes:
-      - ./docker/grafana:/etc/grafana/provisioning/datasources:ro
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_INSTALL_PLUGINS=redis-datasource
     ports:
       - "3000:3000"
+    networks:
+      microservices-net:
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: rabbit
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_PROMETHEUS=true  # Явно включаем метрики Prometheus
     ports:
-      - "5672:5672"  # Порт для AMQP
-      - "15672:15672"  # Порт для веб-интерфейса управления
+      - "5672:5672"  # AMQP
+      - "15672:15672"  # Web UI
+    networks:
+      microservices-net:
     restart: unless-stopped
+
+  rabbitmq-exporter:
+    image: kbudde/rabbitmq-exporter
+    environment:
+      - RABBIT_URL=http://rabbitmq:15672  # URL для API управления
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
+      - PUBLISH_PORT=9419
+    ports:
+      - "9419:9419"
+    networks:
+      microservices-net:
+    depends_on:
+      - rabbitmq
+
+  redis:
+    container_name: redis
+    image: redis
+    networks:
+      microservices-net:
+    ports:
+      - "6379:6379"
+
+  redis-exporter:
+    container_name: redis-exporter
+    image: quay.io/oliver006/redis_exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    networks:
+      microservices-net:
+    depends_on:
+      - redis
+
+  tempo:
+    container_name: tempo
+    image: grafana/tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./docker/tempo/tempo.yaml:/etc/tempo.yaml
+    ports:
+      - "3200:3200"
+      - "9411:9411" # Consume spans
+    networks:
+      microservices-net:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Маппинг для Linux
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail
+    command: [ "-config.file=/etc/promtail/promtail.yml" ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/promtail/promtail.yml:/etc/promtail/promtail.yml
+    networks:
+      microservices-net:
+
+  loki:
+    container_name: loki
+    image: grafana/loki
+    command: "-config.file=/etc/loki/local-config.yaml"
+    environment:
+      - JAEGER_AGENT_HOST=tempo
+      - JAEGER_ENDPOINT=http://tempo:14268/api/traces
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=1
+    networks:
+      - microservices-net
+    ports:
+      - "3100:3100" # Consume logs
+#    depends_on:
+#      - promtail
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/rule_files/:/etc/prometheus/rule_files/
+    ports:
+      - "9090:9090"
+    networks:
+      microservices-net:
+    depends_on:
+      - redis-exporter
+      - rabbitmq
+      - grafana
+
+  # go to http://127.0.0.1:9093/#/alerts?silenced=false&inhibited=false&active=true
+  alertmanager:
+    container_name: alertmanager
+    image: prom/alertmanager
+    command: "--config.file=/etc/alertmanager/alertmanager.yml"
+    volumes:
+      - ./docker/alertmanager/:/etc/alertmanager/
+    networks:
+      microservices-net:
+    ports:
+      - "9093:9093"
+    depends_on:
+      - prometheus
 
 volumes:
   postgres:

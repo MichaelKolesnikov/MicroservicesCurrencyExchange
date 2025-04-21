@@ -1,0 +1,11 @@
+groups:
+  - name: redis_alerts
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis недоступен"
+          description: "{{ $labels.instance }}: Redis недоступен более 1 минуты."

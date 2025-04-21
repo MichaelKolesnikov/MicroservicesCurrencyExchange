@@ -1,5 +1,6 @@
 package kfd.userservice.lol
 
+import io.micrometer.observation.annotation.Observed
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobParametersBuilder
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@Observed(name = "LolController")
 @RequestMapping("/lol")
 class LolController(
     private val jobLauncher: JobLauncher,

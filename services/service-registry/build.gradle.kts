@@ -29,15 +29,15 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
 
-	// prometheus
-	implementation("io.micrometer:micrometer-registry-prometheus")
-
-	// zipkin -> tempo
-	implementation("io.micrometer:micrometer-tracing-bridge-brave")
-	implementation("io.zipkin.reporter2:zipkin-reporter-brave")
-
-	// loki
-	implementation("com.github.loki4j:loki-logback-appender:1.4.0")
+	// Monitoring
+	implementation("org.springframework:spring-aspects")
+	// Micrometer & Tracing
+	implementation("io.micrometer:micrometer-tracing-bridge-otel")
+	implementation("io.opentelemetry:opentelemetry-exporter-zipkin")
+	// DataSource observability
+	implementation("net.ttddyy.observation:datasource-micrometer-spring-boot:1.0.3")
+	implementation("io.opentelemetry:opentelemetry-exporter-zipkin:1.35.0")
+	runtimeOnly("com.github.loki4j:loki-logback-appender:1.3.2")
 
 	// Caffeine
 	implementation("com.github.ben-manes.caffeine:caffeine")
