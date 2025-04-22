@@ -4,11 +4,11 @@
 Приложение обмена валют, реализованное в микросервисной архитектуре.
 
 Список сервисов:
-spring-cloud-config-server
-service-registry
-gateway
-user-service
-payment-service
+- spring-cloud-config-server
+- service-registry
+- gateway
+- user-service
+- payment-service
 
 Настроены grafana (tempo, loki, prometheus)
 
