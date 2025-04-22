@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Currency Exchange</title>
+</head>
+<body>
+<h1>Your Balances</h1>
+<table border="1">
+    <tr>
+        <th>Currency</th>
+        <th>Your Balance</th>
+        <th>Service Balance</th>
+    </tr>
+    <tr th:each="currency : ${currencyList}">
+        <td th:text="${currency}"></td>
+        <td th:text="${userCurrencies.get(currency)}"></td>
+        <td th:text="${serviceCurrencies.get(currency)}"></td>
+    </tr>
+</table>
+
+
+<h1>Exchange Rates</h1>
+<table border="1">
+    <tr>
+        <th>From \ To</th>
+        <th th:each="currency : ${currencyList}" th:text="${currency}"></th>
+    </tr>
+    <tr th:each="fromCurrency : ${currencyList}">
+        <td th:text="${fromCurrency}"></td>
+        <td th:each="toCurrency : ${currencyList}">
+            <span th:with="rate=${rates.get(fromCurrency)?.get(toCurrency)}">
+                <span th:if="${rate != null}" th:text="${#numbers.formatDecimal(rate, 1, 4)}"></span>
+                <span th:unless="${rate != null}">-</span>
+            </span>
+        </td>
+    </tr>
+</table>
+
+<h1>Add Funds</h1>
+<form th:action="@{/addFunds}" method="post">
+    <select name="currency">
+        <option th:each="currency : ${currencyList}"
+                th:value="${currency}"
+                th:text="${currency}"></option>
+    </select>
+    <input type="number" step="0.01" name="amount" placeholder="Amount">
+    <button type="submit">Add Funds</button>
+</form>
+
+<h1>Make Exchange</h1>
+<form th:action="@{/exchange}" method="post">
+    <select name="fromCurrency">
+        <option th:each="currency : ${currencyList}"
+                th:value="${currency}"
+                th:text="${currency}"></option>
+    </select>
+    <select name="toCurrency">
+        <option th:each="currency : ${currencyList}"
+                th:value="${currency}"
+                th:text="${currency}"></option>
+    </select>
+    <input type="number" step="0.01" name="amount" placeholder="Amount">
+    <button type="submit">Exchange</button>
+</form>
+
+<div th:if="${error}" style="color: red;">
+    Error: [[${error}]]
+</div>
+<div th:if="${success}" style="color: green;">
+    [[${success}]]
+</div>
+</body>
+</html>
